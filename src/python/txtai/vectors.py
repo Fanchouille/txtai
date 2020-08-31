@@ -22,6 +22,7 @@ from .tokenizer import Tokenizer
 # pylint: disable=W0603
 VECTORS = None
 
+
 def create(path, scoring, blocking):
     """
     Multiprocessing helper method. Creates a global embeddings object to be accessed in a new
@@ -37,6 +38,7 @@ def create(path, scoring, blocking):
     # Create a global embedding object using configuration and saved
     VECTORS = WordVectors(path, blocking, scoring)
 
+
 def transform(document):
     """
     Multiprocessing helper method. Transforms document tokens into an embedding.
@@ -51,6 +53,7 @@ def transform(document):
     global VECTORS
 
     return (document[0], VECTORS.transform(document))
+
 
 class Vectors(object):
     """
@@ -104,6 +107,7 @@ class Vectors(object):
         Returns:
             embeddings vector
         """
+
 
 class WordVectors(Vectors):
     """
@@ -164,6 +168,14 @@ class WordVectors(Vectors):
 
         return embedding
 
+    def batch_transform(self, documents):
+        # Convert to tokens if necessary
+        processed_docs = []
+        for document in documents:
+            processed_docs.append(self.transform(document))
+
+        return np.array(processed_docs)
+
     def lookup(self, tokens):
         """
         Queries word vectors for given list of input tokens.
@@ -214,6 +226,7 @@ class WordVectors(Vectors):
         print("Converting vectors to magnitude format")
         converter.convert(path + ".txt", path + ".magnitude", subword=True)
 
+
 class TransformersVectors(Vectors):
     """
     Builds sentence embeddings/vectors using the transformers library.
@@ -255,4 +268,14 @@ class TransformersVectors(Vectors):
             document = (document[0], Tokenizer.tokenize(document[1]), document[2])
 
         return self.model.encode([" ".join(document[1])], show_progress_bar=False)[0]
- 
+
+    def batch_transform(self, documents):
+        # Convert to tokens if necessary
+        processed_docs = []
+        for document in documents:
+            if isinstance(document[1], str):
+                document = (document[0], Tokenizer.tokenize(document[1]), document[2])
+                processed_docs.append(document)
+
+        return np.array(
+            self.model.encode([" ".join(document[1]) for document in processed_docs], show_progress_bar=False))

@@ -227,10 +227,10 @@ class Embeddings(object):
         """
 
         # Convert tokens to embedding vector
-        embeddings = self.transform((None, queries, None))
+        batch_embedding = self.batch_transform((None, queries, None))
 
         # Search embeddings index
-        results = self.embeddings.batch_search(embeddings, limit)
+        results = self.embeddings.batch_search(batch_embedding, limit)
 
         # Map ids if id mapping available
         lookup = self.config.get("ids")
