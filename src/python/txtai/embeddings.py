@@ -13,6 +13,7 @@ from .ann import ANN
 from .scoring import Scoring
 from .vectors import Vectors
 
+
 class Embeddings(object):
     """
     Model that builds sentence embeddings from a list of tokens.
@@ -55,7 +56,8 @@ class Embeddings(object):
             vector model
         """
 
-        return Vectors.create(self.config.get("method"), self.config["path"], True if not self.embeddings else False, self.scoring)
+        return Vectors.create(self.config.get("method"), self.config["path"], True if not self.embeddings else False,
+                              self.scoring)
 
     def score(self, documents):
         """
@@ -209,6 +211,31 @@ class Embeddings(object):
         lookup = self.config.get("ids")
         if lookup:
             return [(lookup[i], score) for i, score in results]
+
+        return results
+
+    def batch_search(self, queries, limit=3):
+        """
+        Finds documents in the vector model most similar to the input queries.
+
+        Args:
+            query: queries text|tokens
+            limit: maximum results
+
+        Returns:
+            list of topn matched (id, score)
+        """
+
+        # Convert tokens to embedding vector
+        embeddings = self.transform((None, queries, None))
+
+        # Search embeddings index
+        results = self.embeddings.batch_search(embeddings, limit)
+
+        # Map ids if id mapping available
+        lookup = self.config.get("ids")
+        if lookup:
+            return [[(lookup[i], score) for i, score in result] for result in results]
 
         return results
 

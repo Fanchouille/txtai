@@ -246,14 +246,14 @@ class NMSLIB(ANN):
         ids, scores = self.model.knnQuery(query.reshape(1, -1), k=limit)
 
         # Map results to [(id, score)]
-        return list(zip(ids[0], scores))
+        return list(zip(ids, scores))
 
     def batch_search(self, queries, limit):
         # Run the query
-        ids, scores = self.model.knnQueryBatch(queries, k=limit, num_threads=4)
+        neighbours = self.model.knnQueryBatch(queries, k=limit, num_threads=4)
 
         # Map results to [(id, score)]
-        return list(zip(ids, scores))
+        return [list(zip(neigh[0], neigh[1])) for neigh in neighbours]
 
     def save(self, path):
         # Write index
