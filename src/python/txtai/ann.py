@@ -7,13 +7,16 @@ import numpy as np
 # pylint: disable=E0611
 from annoy import AnnoyIndex
 from hnswlib import Index
+import nmslib
 
 # Conditionally import Faiss as it's only supported on Linux/macOS
 try:
     import faiss
+
     FAISS = True
 except ImportError:
     FAISS = False
+
 
 class ANN(object):
     """
@@ -38,13 +41,15 @@ class ANN(object):
 
         # Default backend if not provided, based on available libraries
         if not backend:
-            backend = "faiss" if FAISS else "annoy"
+            backend = "faiss" if FAISS else "nmslib"
 
         # Create ANN instance
         if backend == "annoy":
             model = Annoy(config)
         elif backend == "hnsw":
             model = HNSW(config)
+        elif backend == "nmslib":
+            model = NMSLIB(config)
         else:
             # Raise error if trying to create a Faiss index without Faiss installed
             if not FAISS:
@@ -95,6 +100,7 @@ class ANN(object):
         Saves an ANN model at path.
         """
 
+
 class Annoy(ANN):
     """
     Builds an ANN model using the Annoy library.
@@ -130,6 +136,7 @@ class Annoy(ANN):
         # Write index
         self.model.save(path)
 
+
 class Faiss(ANN):
     """
     Builds an ANN model using the Faiss library.
@@ -163,6 +170,7 @@ class Faiss(ANN):
     def save(self, path):
         # Write index
         faiss.write_index(self.model, path)
+
 
 class HNSW(ANN):
     """
@@ -198,3 +206,47 @@ class HNSW(ANN):
     def save(self, path):
         # Write index
         self.model.save_index(path)
+
+
+class NMSLIB(ANN):
+    """
+    Builds an ANN model using the hnswlib library.
+    """
+
+    def load(self, path):
+        # Load index
+        self.model = nmslib.init(method="hnsw", space=self.config["metric"])
+        self.model.loadIndex(path, load_data=False)
+
+    def index(self, embeddings):
+        # Inner product is equal to cosine similarity on normalized vectors
+        self.config["metric"] = "cosinesimil"
+
+        # Create index
+        self.model = nmslib.init(method="hnsw", space=self.config["metric"])
+
+        # Add items
+        self.model.addDataPointBatch(embeddings, np.array(range(embeddings.shape[0])))
+
+        index_time_params = {'M': self.index_params["M"], 'indexThreadQty': self.index_params["num_threads"],
+                             'efConstruction': self.index_params["efC"], 'post': 2}
+
+        self.model.createIndex(index_time_params)
+
+    def search(self, query, limit):
+        # Run the query
+        ids, scores = self.model.knnQuery(query.reshape(1, -1), k=limit)
+
+        # Map results to [(id, score)]
+        return list(zip(ids[0], scores))
+
+    def batch_search(self, queries, limit):
+        # Run the query
+        ids, scores = self.model.knnQueryBatch(queries, k=limit, num_threads=4)
+
+        # Map results to [(id, score)]
+        return list(zip(ids, scores))
+
+    def save(self, path):
+        # Write index
+        self.model.saveIndex(path, save_data=False)
