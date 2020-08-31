@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="e4cc9d23-ad6f-42bd-bf34-6c61a831beef" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/src/python/txtai/embeddings.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/python/txtai/embeddings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/python/txtai/vectors.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/python/txtai/vectors.py" afterDir="false" />
-    </list>
+    <list default="true" id="e4cc9d23-ad6f-42bd-bf34-6c61a831beef" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
