@@ -228,8 +228,7 @@ class NMSLIB(ANN):
         # Add items
         self.model.addDataPointBatch(embeddings, np.array(range(embeddings.shape[0])))
 
-        index_time_params = {'M': self.index_params["M"], 'indexThreadQty': self.index_params["num_threads"],
-                             'efConstruction': self.index_params["efC"], 'post': 2}
+        index_time_params = {'M': 20, 'indexThreadQty': 4, 'efConstruction': 200, 'post': 2}
 
         self.model.createIndex(index_time_params)
 
