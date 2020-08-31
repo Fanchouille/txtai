@@ -189,6 +189,30 @@ class Embeddings(object):
 
         return embedding
 
+    def batch_transform(self, documents):
+        """
+        Transforms document into an embeddings vector. Document text will be tokenized if not pre-tokenized.
+
+        Args:
+            document: (id, text|tokens, tags)
+
+        Returns:
+            embeddings vector
+        """
+
+        # Convert document into sentence embedding
+        embedding = self.model.transform(documents)
+
+        # Reduce the dimensionality of the embeddings. Scale the embeddings using this
+        # model to reduce the noise of common but less relevant terms.
+        if self.lsa:
+            self.removePC(embedding)
+
+        # Normalize embeddings
+        self.normalize(embedding)
+
+        return embedding
+
     def search(self, query, limit=3):
         """
         Finds documents in the vector model most similar to the input document.
