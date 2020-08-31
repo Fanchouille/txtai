@@ -95,6 +95,15 @@ class ANN(object):
             limit: maximum results
         """
 
+    def batch_search(self, queries, limit):
+        """
+        Searches ANN model for query matrix. Returns topn results.
+
+        Args:
+            queries: query matrix
+            limit: maximum results
+        """
+
     def save(self, path):
         """
         Saves an ANN model at path.
